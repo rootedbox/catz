@@ -26,6 +26,9 @@
   ],
   "author": "Jason Jacobs",
   "license": "MIT",
+  "bin": {
+    "catz": "./catz.js"
+  },
   "devDependencies": {
     "pkg": "^5.8.1"
   }
