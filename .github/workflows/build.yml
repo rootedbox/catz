@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Setup Node.js
-        uses: actions/setup-node@v2.4.4
+        uses: actions/setup-node@v2.5.3
         with:
           node-version: '16.x'
       - name: Install dependencies
@@ -23,7 +23,7 @@ jobs:
           npm run build:macos
           npm run build:windows
       - name: Create release
-        uses: actions/create-release@v1.0.6
+        uses: actions/create-release@v1.3.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -68,13 +68,3 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: catz-windows
-          path: ./dist/catz-windows-x64.exe
-      - name: Add Windows artifact to release
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/catz-windows-x64.exe
-          asset_name: catz-windows-x64.exe
-          asset_content_type: application/octet-stream
