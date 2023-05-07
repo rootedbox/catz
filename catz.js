@@ -26,9 +26,11 @@ function readArrowKeys() {
     });
 }
 
-async function displayFileWithSyntaxHighlighting(filePath, pagination, lineNumbers) {
+async function displayFileWithSyntaxHighlighting(filePath, pagination, lineNumbers, noHighlighting, showEnds) {
     try {
+        console.log(noHighlighting);
         let data = await fs.readFile(filePath, 'utf-8');
+
 
 
         data = lineNumbers
@@ -41,16 +43,25 @@ async function displayFileWithSyntaxHighlighting(filePath, pagination, lineNumbe
             }).join('\n')
             : data;
 
-        const highlightedCode = hljs.highlightAuto(data).value;
+        const highlightedCode = noHighlighting ? hljs.highlightAuto(data).value : data;
 
+        let terminalHighlightedCode = noHighlighting
+            ? highlightedCode
+                .replace(/<span class="([^"]+)">/g, (_, className) => {
+                    const colorCode = colorMapping[className];
+                    return colorCode || '';
+                })
+                .replace(/<\/span>/g, () => '\x1b[0m') // reset color
+                .replace(/&[^;]+;/g, (entity) => decodeHTML(entity))
+            : data;
 
-        const terminalHighlightedCode = highlightedCode
-            .replace(/<span class="([^"]+)">/g, (_, className) => {
-                const colorCode = colorMapping[className];
-                return colorCode || '';
-            })
-            .replace(/<\/span>/g, () => '\x1b[0m') // reset color
-            .replace(/&[^;]+;/g, (entity) => decodeHTML(entity));
+        if (showEnds) {
+            terminalHighlightedCode = terminalHighlightedCode.split('\n').map((line) => {
+                const endSymbol = noHighlighting ? '\x1b[48;5;238m\x1b[31m$\x1b[0m' : '$';
+                line = `${line}${endSymbol}`;
+                return line;
+            }).join('\n');
+        }
 
         if (pagination) {
             const terminalLines = terminalHighlightedCode.split('\n');
@@ -97,11 +108,22 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Paginate the output',
     })
+    .option('show-ends', {
+        alias: 'e',
+        type: 'boolean',
+        description: 'Display $ at the end of each line',
+    })
     .option('line-numbers', {
         alias: 'n',
         type: 'boolean',
         description: 'Show line numbers',
     })
+    .option('highlighting', {
+        type: 'boolean',
+        default: true,
+        description: 'Enable syntax highlighting',
+    })
+    .boolean('highlighting')
     .help()
     .argv;
 
@@ -111,4 +133,5 @@ if (!filePath) {
     process.exit(1);
 }
 
-displayFileWithSyntaxHighlighting(filePath, argv.paginate, argv['line-numbers']);
+displayFileWithSyntaxHighlighting(filePath, argv.paginate, argv['line-numbers'], argv.highlighting, argv['show-ends']);
+
