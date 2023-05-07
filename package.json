@@ -25,5 +25,8 @@
     "catz"
   ],
   "author": "Jason Jacobs",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  }
 }
