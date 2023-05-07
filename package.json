@@ -1,0 +1,26 @@
+{
+  "name": "catz",
+  "version": "0.1.0",
+  "description": "A command-line tool for displaying syntax-highlighted files with pagination support.",
+  "main": "catz.js",
+  "type": "module",
+  "scripts": {
+    "start": "node catz.js --paginate catz.js"
+  },
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "entities": "^4.5.0",
+    "fs": "^0.0.1-security",
+    "highlight.js": "^11.8.0",
+    "yargs": "^17.7.2"
+  },
+  "keywords": [
+    "syntax-highlighting",
+    "command-line",
+    "pagination",
+    "cat",
+    "catz"
+  ],
+  "author": "Jason Jacobs",
+  "license": "MIT"
+}
