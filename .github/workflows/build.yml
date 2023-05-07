@@ -24,7 +24,7 @@ jobs:
       - name: Build executables for Windows
         run: npm run build:windows
       - name: Create release
-        uses: actions/create-release@v1.3.5
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
