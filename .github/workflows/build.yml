@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@sha256:61c18683c5fa897f5d5c5c5b9e01ef0326a128be6a0e3af3a20e2e6f0d0c8dd6
+        uses: actions/checkout@v2.4.3
       - name: Setup Node.js
         uses: actions/setup-node@v2.5.3
         with:
