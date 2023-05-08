@@ -28,7 +28,6 @@ async function getUncommittedLines(filePath) {
     return uncommittedLines;
 }
 
-
 function readArrowKeys() {
     return new Promise((resolve) => {
         readline.emitKeypressEvents(process.stdin);
@@ -103,6 +102,29 @@ async function paginateOutput(terminalHighlightedCode) {
     }
 }
 
+function applyGitChanges(terminalHighlightedCode, uncommittedLines, noHighlighting) {
+    return terminalHighlightedCode.split('\n').map((line, index) => {
+        if (noHighlighting) {
+            const gitColumnBgColor = '\x1b[48;5;238m'; // Grey background
+            const gitPlusColor = '\x1b[31m'; // Red color
+            const resetColor = '\x1b[0m'; // Reset color
+
+            if (uncommittedLines.includes(index + 1)) {
+                line = `${gitColumnBgColor}${gitPlusColor}+${resetColor}${gitColumnBgColor}${resetColor} ${line}`;
+            } else {
+                line = `  ${line}`;
+            }
+        } else {
+            if (uncommittedLines.includes(index + 1)) {
+                line = `+ ${line}`;
+            } else {
+                line = `  ${line}`;
+            }
+        }
+        return line;
+    }).join('\n');
+}
+
 async function displayFileWithSyntaxHighlighting(options) {
     let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs, git } = options;
 
@@ -116,7 +138,6 @@ async function displayFileWithSyntaxHighlighting(options) {
 
         const lines = data.split('\n');
         data = await processLines(lines, { lineNumbers, showTabs, squeezeBlank });
-
 
         const highlightedCode = noHighlighting ? hljs.highlightAuto(data).value : data;
 
@@ -139,26 +160,7 @@ async function displayFileWithSyntaxHighlighting(options) {
         }
 
         if (git) {
-            terminalHighlightedCode = terminalHighlightedCode.split('\n').map((line, index) => {
-                if(noHighlighting) {
-                    const gitColumnBgColor = '\x1b[48;5;238m'; // Grey background
-                    const gitPlusColor = '\x1b[31m'; // Red color
-                    const resetColor = '\x1b[0m'; // Reset color
-
-                    if (uncommittedLines.includes(index + 1)) {
-                        line = `${gitColumnBgColor}${gitPlusColor}+${resetColor}${gitColumnBgColor}${resetColor} ${line}`;
-                    } else {
-                        line = `  ${line}`;
-                    }
-                } else {
-                    if (uncommittedLines.includes(index + 1)) {
-                        line = `+ ${line}`;
-                    } else {
-                        line = `  ${line}`;
-                    }
-                }
-                return line;
-            }).join('\n');
+            terminalHighlightedCode = applyGitChanges(terminalHighlightedCode, uncommittedLines, noHighlighting);
         }
 
         if (pagination) {
