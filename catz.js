@@ -48,6 +48,29 @@ function readArrowKeys() {
     });
 }
 
+async function processLines(lines, options) {
+    let { lineNumbers, showTabs, squeezeBlank } = options;
+    const totalLines = lines.length;
+
+    return lines
+        .map((line, index) => {
+            if (squeezeBlank && /^\s*$/.test(line)) {
+                return null;
+            }
+
+            const lineNumberWidth = totalLines.toString().length;
+            const paddedLineNumber = String(index + 1).padStart(lineNumberWidth, ' ');
+
+            if (showTabs) {
+                line = line.replace(/\t/g, '🐈');
+            }
+
+            return lineNumbers ? `${paddedLineNumber}: ${line}` : line;
+        })
+        .filter(Boolean)
+        .join('\n');
+}
+
 async function displayFileWithSyntaxHighlighting(options) {
     let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs, git } = options;
 
@@ -60,26 +83,8 @@ async function displayFileWithSyntaxHighlighting(options) {
         }
 
         const lines = data.split('\n');
-        const totalLines = lines.length;
+        data = await processLines(lines, { lineNumbers, showTabs, squeezeBlank });
 
-        data = lines
-            .map((line, index) => {
-                // Skip the blank lines if squeezeBlank is enabled
-                if (squeezeBlank && /^\s*$/.test(line)) {
-                    return null;
-                }
-
-                const lineNumberWidth = totalLines.toString().length;
-                const paddedLineNumber = String(index + 1).padStart(lineNumberWidth, ' ');
-
-                if (showTabs) {
-                    line = line.replace(/\t/g, '🐈');
-                }
-
-                return lineNumbers ? `${paddedLineNumber}: ${line}` : line;
-            })
-            .filter(Boolean)
-            .join('\n');
 
         const highlightedCode = noHighlighting ? hljs.highlightAuto(data).value : data;
 
