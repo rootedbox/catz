@@ -27,22 +27,27 @@ function readArrowKeys() {
 }
 
 async function displayFileWithSyntaxHighlighting(options) {
-    const { filePath, pagination, lineNumbers, noHighlighting, showEnds } = options;
+    let {filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank} = options;
+
     try {
-        console.log(noHighlighting);
         let data = await fs.readFile(filePath, 'utf-8');
 
+        const lines = data.split('\n');
+        const totalLines = lines.length;
 
+        data = lines
+            .map((line, index) => {
+                if (squeezeBlank && /^\s*$/.test(line)) {
+                    return null;
+                }
 
-        data = lineNumbers
-            ? data.split('\n').map((line, index) => {
-                const totalLines = data.split('\n').length;
                 const lineNumberWidth = totalLines.toString().length;
                 const paddedLineNumber = String(index + 1).padStart(lineNumberWidth, ' ');
 
-                return `${paddedLineNumber}: ${line}`;
-            }).join('\n')
-            : data;
+                return lineNumbers ? `${paddedLineNumber}: ${line}` : line;
+            })
+            .filter(Boolean)
+            .join('\n');
 
         const highlightedCode = noHighlighting ? hljs.highlightAuto(data).value : data;
 
@@ -119,6 +124,11 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Show line numbers',
     })
+    .option('squeeze-blank', {
+        alias: 's',
+        type: 'boolean',
+        description: 'Remove blank lines from the output',
+    })
     .option('highlighting', {
         type: 'boolean',
         default: true,
@@ -140,6 +150,7 @@ displayFileWithSyntaxHighlighting({
     lineNumbers: argv['line-numbers'],
     noHighlighting: argv.highlighting,
     showEnds: argv['show-ends'],
+    squeezeBlank: argv['squeeze-blank'],
 });
 
 
