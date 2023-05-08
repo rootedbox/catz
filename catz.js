@@ -71,6 +71,38 @@ async function processLines(lines, options) {
         .join('\n');
 }
 
+async function paginateOutput(terminalHighlightedCode) {
+    const terminalLines = terminalHighlightedCode.split('\n');
+    let currentIndex = 0;
+
+    const pageSize = process.stdout.rows - 1;
+
+    while (currentIndex < terminalLines.length) {
+        console.clear();
+        const page = terminalLines.slice(currentIndex, currentIndex + pageSize).join('\n');
+        console.log(page);
+
+        if (currentIndex + pageSize >= terminalLines.length) {
+            process.exit(0);
+        }
+
+        const statusBarText = `Line: ${currentIndex + 1}/${terminalLines.length}`;
+        process.stdout.write(`\x1b[7m${statusBarText.padEnd(process.stdout.columns)}\x1b[0m`);
+
+        const userInput = await readArrowKeys();
+
+        if (userInput === 'up' && currentIndex > 0) {
+            currentIndex -= 1;
+        } else if (userInput === 'down' || userInput === 'return') {
+            currentIndex += 1;
+        } else if (userInput === 'space') {
+            currentIndex += pageSize;
+        } else if (userInput === 'q' || userInput === 'escape') {
+            process.exit(0);
+        }
+    }
+}
+
 async function displayFileWithSyntaxHighlighting(options) {
     let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs, git } = options;
 
@@ -130,35 +162,7 @@ async function displayFileWithSyntaxHighlighting(options) {
         }
 
         if (pagination) {
-            const terminalLines = terminalHighlightedCode.split('\n');
-            let currentIndex = 0;
-
-            const pageSize = process.stdout.rows - 1;
-
-            while (currentIndex < terminalLines.length) {
-                console.clear();
-                const page = terminalLines.slice(currentIndex, currentIndex + pageSize).join('\n');
-                console.log(page);
-
-                if (currentIndex + pageSize >= terminalLines.length) {
-                    process.exit(0);
-                }
-
-                const statusBarText = `Line: ${currentIndex + 1}/${terminalLines.length}`;
-                process.stdout.write(`\x1b[7m${statusBarText.padEnd(process.stdout.columns)}\x1b[0m`);
-
-                const userInput = await readArrowKeys();
-
-                if (userInput === 'up' && currentIndex > 0) {
-                    currentIndex -= 1;
-                } else if (userInput === 'down' || userInput === 'return') {
-                    currentIndex += 1;
-                } else if (userInput === 'space') {
-                    currentIndex += pageSize;
-                } else if (userInput === 'q' || userInput === 'escape') {
-                    process.exit(0);
-                }
-            }
+            await paginateOutput(terminalHighlightedCode);
         } else {
             console.log(terminalHighlightedCode);
         }
