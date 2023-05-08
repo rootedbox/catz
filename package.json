@@ -6,9 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node catz.js --paginate catz.js",
-    "build:linux": "pkg . -t node16-linux-x64 --out-dir dist",
-    "build:macos": "pkg . -t node16-macos-x64 --out-dir dist",
-    "build:windows": "pkg . -t node16-win-x64 --out-dir dist"
+    "build": "pkg . --out-path dist/"
   },
   "dependencies": {
     "chalk": "^5.2.0",

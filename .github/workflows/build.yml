@@ -2,61 +2,61 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*.*.*'
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: 16
+
       - name: Install dependencies
-        run: npm install
-      - name: Build executables for Linux
-        run: npm run build:linux
-      - name: Build executables for macOS
-        run: npm run build:macos
-      - name: Build executables for Windows
-        run: npm run build:windows
-      - name: Create release
+        run: npm ci
+
+      - name: Build executables
+        run: npm run build
+
+      - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.ref }}
+          tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this release:
-            - Added new feature X
-            - Fixed issue Y
           draft: false
           prerelease: false
-        id: create_release
-      - name: Upload Linux artifact to release
-        uses: actions/upload-release-asset@v1.0.2
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/catz-linux-x64
-          asset_name: catz-linux-x64
+          asset_path: ./dist/catz-linux
+          asset_name: catz-linux
           asset_content_type: application/octet-stream
-      - name: Upload macOS artifact to release
-        uses: actions/upload-release-asset@v1.0.2
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/catz-macos-x64
-          asset_name: catz-macos-x64
+          asset_path: ./dist/catz-macos
+          asset_name: catz-macos
           asset_content_type: application/octet-stream
-      - name: Upload Windows artifact to release
-        uses: actions/upload-release-asset@v1.0.2
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
