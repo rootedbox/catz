@@ -6,6 +6,28 @@ import readline from 'readline';
 import process from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import git from 'simple-git';
+
+async function getUncommittedLines(filePath) {
+    const simpleGit = git();
+    const fileStatus = await simpleGit.diff(['--unified=0', filePath]);
+
+    const lineRegex = /^@@ -(\d+)(?:,\d+)? \+(\d+),(\d+)/gm;
+    const uncommittedLines = [];
+    let match;
+
+    while ((match = lineRegex.exec(fileStatus)) !== null) {
+        const startLine = parseInt(match[2], 10);
+        const numLines = parseInt(match[3], 10);
+
+        for (let i = 0; i < numLines; i++) {
+            uncommittedLines.push(startLine + i);
+        }
+    }
+
+    return uncommittedLines;
+}
+
 
 function readArrowKeys() {
     return new Promise((resolve) => {
@@ -27,16 +49,22 @@ function readArrowKeys() {
 }
 
 async function displayFileWithSyntaxHighlighting(options) {
-    let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs } = options;
+    let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs, git } = options;
 
     try {
         let data = await fs.readFile(filePath, 'utf-8');
+
+        let uncommittedLines = [];
+        if (git) {
+            uncommittedLines = await getUncommittedLines(filePath);
+        }
 
         const lines = data.split('\n');
         const totalLines = lines.length;
 
         data = lines
             .map((line, index) => {
+                // Skip the blank lines if squeezeBlank is enabled
                 if (squeezeBlank && /^\s*$/.test(line)) {
                     return null;
                 }
@@ -69,6 +97,29 @@ async function displayFileWithSyntaxHighlighting(options) {
             terminalHighlightedCode = terminalHighlightedCode.split('\n').map((line) => {
                 const endSymbol = noHighlighting ? '\x1b[48;5;238m\x1b[31m$\x1b[0m' : '$';
                 line = `${line}${endSymbol}`;
+                return line;
+            }).join('\n');
+        }
+
+        if (git) {
+            terminalHighlightedCode = terminalHighlightedCode.split('\n').map((line, index) => {
+                if(noHighlighting) {
+                    const gitColumnBgColor = '\x1b[48;5;238m'; // Grey background
+                    const gitPlusColor = '\x1b[31m'; // Red color
+                    const resetColor = '\x1b[0m'; // Reset color
+
+                    if (uncommittedLines.includes(index + 1)) {
+                        line = `${gitColumnBgColor}${gitPlusColor}+${resetColor}${gitColumnBgColor}${resetColor} ${line}`;
+                    } else {
+                        line = `  ${line}`;
+                    }
+                } else {
+                    if (uncommittedLines.includes(index + 1)) {
+                        line = `+ ${line}`;
+                    } else {
+                        line = `  ${line}`;
+                    }
+                }
                 return line;
             }).join('\n');
         }
@@ -133,6 +184,10 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Remove blank lines from the output',
     })
+    .option('git', {
+        type: 'boolean',
+        description: 'Enable Git integration',
+    })
     .option('show-tabs', {
         alias: 't',
         type: 'boolean',
@@ -160,6 +215,5 @@ displayFileWithSyntaxHighlighting({
     noHighlighting: argv.highlighting,
     showEnds: argv['show-ends'],
     squeezeBlank: argv['squeeze-blank'],
+    git: argv['git'],
 });
-
-
