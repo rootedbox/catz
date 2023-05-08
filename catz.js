@@ -26,7 +26,8 @@ function readArrowKeys() {
     });
 }
 
-async function displayFileWithSyntaxHighlighting(filePath, pagination, lineNumbers, noHighlighting, showEnds) {
+async function displayFileWithSyntaxHighlighting(options) {
+    const { filePath, pagination, lineNumbers, noHighlighting, showEnds } = options;
     try {
         console.log(noHighlighting);
         let data = await fs.readFile(filePath, 'utf-8');
@@ -133,5 +134,12 @@ if (!filePath) {
     process.exit(1);
 }
 
-displayFileWithSyntaxHighlighting(filePath, argv.paginate, argv['line-numbers'], argv.highlighting, argv['show-ends']);
+displayFileWithSyntaxHighlighting({
+    filePath,
+    pagination: argv.paginate,
+    lineNumbers: argv['line-numbers'],
+    noHighlighting: argv.highlighting,
+    showEnds: argv['show-ends'],
+});
+
 
