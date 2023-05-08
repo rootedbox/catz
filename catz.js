@@ -27,7 +27,7 @@ function readArrowKeys() {
 }
 
 async function displayFileWithSyntaxHighlighting(options) {
-    let {filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank} = options;
+    let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs } = options;
 
     try {
         let data = await fs.readFile(filePath, 'utf-8');
@@ -43,6 +43,10 @@ async function displayFileWithSyntaxHighlighting(options) {
 
                 const lineNumberWidth = totalLines.toString().length;
                 const paddedLineNumber = String(index + 1).padStart(lineNumberWidth, ' ');
+
+                if (showTabs) {
+                    line = line.replace(/\t/g, '🐈');
+                }
 
                 return lineNumbers ? `${paddedLineNumber}: ${line}` : line;
             })
@@ -128,6 +132,11 @@ const argv = yargs(hideBin(process.argv))
         alias: 's',
         type: 'boolean',
         description: 'Remove blank lines from the output',
+    })
+    .option('show-tabs', {
+        alias: 't',
+        type: 'boolean',
+        description: 'Display 🐈 for each tab character',
     })
     .option('highlighting', {
         type: 'boolean',
