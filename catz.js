@@ -7,6 +7,7 @@ import process from 'process';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import git from 'simple-git';
+import rc from 'rc';
 
 async function getUncommittedLines(filePath) {
     const simpleGit = git();
@@ -178,39 +179,56 @@ async function displayFileWithSyntaxHighlighting(options) {
     }
 }
 
+
+const defaults = rc('catz', {
+    paginate: false,
+    'show-ends': false,
+    'line-numbers': false,
+    'squeeze-blank': false,
+    git: false,
+    'show-tabs': false,
+    highlighting: true
+});
+
 const argv = yargs(hideBin(process.argv))
     .option('paginate', {
         alias: 'p',
         type: 'boolean',
         description: 'Paginate the output',
+        default: defaults.paginate,
     })
     .option('show-ends', {
         alias: 'e',
         type: 'boolean',
         description: 'Display $ at the end of each line',
+        default: defaults['show-ends'],
     })
     .option('line-numbers', {
         alias: 'n',
         type: 'boolean',
         description: 'Show line numbers',
+        default: defaults['line-numbers'],
     })
     .option('squeeze-blank', {
         alias: 's',
         type: 'boolean',
         description: 'Remove blank lines from the output',
+        default: defaults['squeeze-blank'],
     })
     .option('git', {
         type: 'boolean',
         description: 'Enable Git integration',
+        default: defaults.git,
     })
     .option('show-tabs', {
         alias: 't',
         type: 'boolean',
         description: 'Display 🐈 for each tab character',
+        default: defaults['show-tabs'],
     })
     .option('highlighting', {
         type: 'boolean',
-        default: true,
+        default: defaults.highlighting,
         description: 'Enable syntax highlighting',
     })
     .boolean('highlighting')

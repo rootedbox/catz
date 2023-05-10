@@ -13,6 +13,7 @@
     "entities": "^4.5.0",
     "fs": "^0.0.1-security",
     "highlight.js": "^11.8.0",
+    "rc": "^1.2.8",
     "simple-git": "^3.18.0",
     "yargs": "^17.7.2"
   },
