@@ -51,7 +51,7 @@ async function processLines(lines, options) {
     let { lineNumbers, showTabs, squeezeBlank } = options;
     const totalLines = lines.length;
 
-    return lines
+    lines = lines
         .map((line, index) => {
             if (squeezeBlank && /^\s*$/.test(line)) {
                 return null;
@@ -65,9 +65,13 @@ async function processLines(lines, options) {
             }
 
             return lineNumbers ? `${paddedLineNumber}: ${line}` : line;
-        })
-        .filter(Boolean)
-        .join('\n');
+        });
+
+    if(squeezeBlank) {
+        lines = lines.filter(Boolean);
+    }
+
+    return lines.join('\n');
 }
 
 async function paginateOutput(terminalHighlightedCode) {
@@ -172,7 +176,6 @@ async function displayFileWithSyntaxHighlighting(options) {
         console.error('Error reading file:', err.message);
     }
 }
-
 
 const argv = yargs(hideBin(process.argv))
     .option('paginate', {
