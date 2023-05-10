@@ -141,7 +141,6 @@ async function displayFileWithSyntaxHighlighting(options) {
         }
 
         const lines = data.split('\n');
-        data = await processLines(lines, { lineNumbers, showTabs, squeezeBlank });
 
         const highlightedCode = noHighlighting ? hljs.highlightAuto(data).value : data;
 
@@ -166,6 +165,8 @@ async function displayFileWithSyntaxHighlighting(options) {
         if (git) {
             terminalHighlightedCode = applyGitChanges(terminalHighlightedCode, uncommittedLines, noHighlighting);
         }
+
+        terminalHighlightedCode = await processLines(terminalHighlightedCode.split('\n'), { lineNumbers, showTabs, squeezeBlank });
 
         if (pagination) {
             await paginateOutput(terminalHighlightedCode);
