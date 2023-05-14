@@ -1,4 +1,5 @@
-import fs from 'fs/promises';
+import fs from 'fs';
+import os from 'os';
 import hljs from 'highlight.js';
 import { decodeHTML } from 'entities';
 import { colorMapping } from './colors.js';
@@ -8,6 +9,9 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import git from 'simple-git';
 import rc from 'rc';
+import path from 'path';
+import ini from 'ini';
+import inquirer from 'inquirer';
 
 async function getUncommittedLines(filePath) {
     const simpleGit = git();
@@ -134,7 +138,7 @@ async function displayFileWithSyntaxHighlighting(options) {
     let { filePath, pagination, lineNumbers, noHighlighting, showEnds, squeezeBlank, showTabs, git } = options;
 
     try {
-        let data = await fs.readFile(filePath, 'utf-8');
+        let data = await fs.promises.readFile(filePath, 'utf-8');
 
         let uncommittedLines = [];
         if (git) {
@@ -179,8 +183,9 @@ async function displayFileWithSyntaxHighlighting(options) {
     }
 }
 
+const configFilePath = path.join(os.homedir(), '.catzrc');
 
-const defaults = rc('catz', {
+const defaultConfig = {
     paginate: false,
     'show-ends': false,
     'line-numbers': false,
@@ -188,7 +193,69 @@ const defaults = rc('catz', {
     git: false,
     'show-tabs': false,
     highlighting: true
-});
+};
+
+async function runWizard() {
+    console.log("🎉 Welcome to catz! 🐈\n");
+    console.log("🧙‍♂️ This wizard will help you purrfectly set up your default configuration. 🧙‍♂️\n");
+
+    const questions = [
+        {
+            type: 'confirm',
+            name: 'paginate',
+            message: 'Would you like to paginate the output by default? 📄➡️📄',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'show-ends',
+            message: 'Would you like to display $ at the end of each line by default? 🐾',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'line-numbers',
+            message: 'Would you like to show line numbers by default? 🐈🔢',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'squeeze-blank',
+            message: 'Would you like to remove extra blank lines from the output by default? 🙀',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'git',
+            message: 'Would you like to enable Git integration by default? 🐈‍⬛⚙️',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'show-tabs',
+            message: 'Would you like to display 🐈 for each tab character by default? 😸',
+            default: false
+        },
+        {
+            type: 'confirm',
+            name: 'highlighting',
+            message: 'Would you like to enable syntax highlighting by default? 🌈',
+            default: true
+        },
+    ];
+
+    const answers = await inquirer.prompt(questions);
+
+    fs.writeFileSync(configFilePath, ini.stringify(answers));
+
+    console.log("✨ Your default configuration has been saved! Enjoy using catz! 😺✨\n");
+}
+
+if (!fs.existsSync(configFilePath)) {
+    await runWizard();
+}
+
+const defaults = rc('catz', defaultConfig);
 
 const argv = yargs(hideBin(process.argv))
     .option('paginate', {
@@ -220,6 +287,11 @@ const argv = yargs(hideBin(process.argv))
         description: 'Enable Git integration',
         default: defaults.git,
     })
+    .option('wizard', {
+        alias: 'w',
+        type: 'boolean',
+        description: 'Run the configuration wizard',
+    })
     .option('show-tabs', {
         alias: 't',
         type: 'boolean',
@@ -234,6 +306,10 @@ const argv = yargs(hideBin(process.argv))
     .boolean('highlighting')
     .help()
     .argv;
+
+if (argv.wizard) {
+    await runWizard().then(() => process.exit(0));
+}
 
 const filePath = argv._[0];
 if (!filePath) {
