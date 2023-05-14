@@ -1,6 +1,6 @@
 # 🐾 Catz 🐾
 
-Catz is a command-line tool for displaying text files with syntax highlighting, pagination, and optional line numbers. It is easy to use and provides a convenient way to view source code files on the terminal. 😺
+Catz is a command-line tool for displaying text files with syntax highlighting, pagination, and optional line numbers. It's easy to use, purrfect for viewing source code files on the terminal, and comes with a friendly wizard to guide you through the setup process. 😺
 
 ## Features
 
@@ -10,18 +10,16 @@ Catz is a command-line tool for displaying text files with syntax highlighting, 
 - 🔢 Line numbers
 - 🔚 Show end of line character `$`
 - 💨 Squeeze blank lines
-- 🐈 Replace tabs with tabby cat emoji
+- 🐈 Replace tabs with a cute tabby cat emoji
 - 🌟 Git integration: show uncommitted lines with a `+` symbol in a colored column
 - 🎛️ Command line options for easy configuration
-
+- 🧙‍♂️ Friendly setup wizard: personalizes Catz to your liking!
 
 ## 📦 Installation
 
 1. Clone the repository to your local machine: `git clone https://github.com/rootedbox/catz.git`
-2. Change directory into the project folder:
+2. Change directory into the project folder: `cd catz`
 3. Install the necessary dependencies: `npm install`
-
-
 
 ## 🐱 Usage
 
@@ -29,6 +27,9 @@ To use Catz, simply run the command followed by the file path and any desired co
 
 `node catz.js [options] <file_path>`
 
+If you're using Catz for the first time or want to change your default configuration, run the friendly setup wizard with the `-w` or `--wizard` option. The wizard will guide you through the setup process and help you personalize Catz to your liking:
+
+`node catz.js --wizard`
 
 ### 📝 Command-line options
 
@@ -39,9 +40,9 @@ To use Catz, simply run the command followed by the file path and any desired co
 - `-s, --squeeze-blank`: Remove blank lines from the output
 - `-t, --show-tabs`: Replace tabs with the tabby cat emoji 🐈
 - `-g, --git`: Show uncommitted lines with a `+` symbol in a colored column
+- `-w, --wizard`: Run the setup wizard to personalize your Catz configuration
 
 Use `--help` to see a list of available options and their descriptions.
-
 
 ### 🐈 Examples
 
@@ -49,7 +50,8 @@ Use `--help` to see a list of available options and their descriptions.
 2. Display a file with pagination and line numbers: `node catz.js -p -n path/to/your/code.js`
 3. Display a file without syntax highlighting and with line ends: `node catz.js --no-highlighting --show-ends path/to/your/code.js`
 
+## 📖 Configuration File
 
+Catz uses a configuration file named `.catzrc` located in your home directory to save your default configuration. This file is created and updated by the setup wizard. If you want to manually change your default configuration, you can edit this file directly.
 
 Enjoy using Catz! 🐾😸
-
